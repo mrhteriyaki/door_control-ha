@@ -1,0 +1,6 @@
+{
+  "domain": "mrh_door_control",
+  "name": "Door Control",
+  "version": "0.1.0",
+  "config_flow": true
+}
