@@ -1,1 +1,1 @@
-"# door_control-ha" 
+# Simple Door Control for Home Assistant
