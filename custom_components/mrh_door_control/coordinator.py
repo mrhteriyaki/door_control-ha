@@ -3,24 +3,26 @@ import aiohttp
 import asyncio 
 import logging  
 
+import async_timeout
 from datetime import timedelta
 
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 DOMAIN = "mrh_door_control"
 _LOGGER = logging.getLogger(__name__)
 
-async def fetch_status(api_url: str) -> dict:
+async def fetch_status(session: aiohttp.ClientSession, api_url: str) -> dict:
     try:
-        async with aiohttp.ClientSession() as session:
+        # Keep the timeout tight so failures return fast
+        async with async_timeout.timeout(5):
             async with session.get(api_url) as response:
                 if response.status == 200:
-                    #(content_type=None) Forces acceptance of the text/html header as device does not always use application/json
-                    return await response.json(content_type=None)
-                else:
-                    raise Exception(f"Error fetching status: {response.status}")
-    except Exception as e:
-        raise Exception(f"Failed to fetch data from server: {str(e)}")
+                    return await response.json(content_type=None)  # device sometimes sends text/html
+                raise UpdateFailed(f"HTTP {response.status} from {api_url}")
+    except (asyncio.TimeoutError, aiohttp.ClientError) as e:
+        # Network/timeout -> handled as UpdateFailed so HA degrades gracefully
+        raise UpdateFailed(f"Network error talking to {api_url}: {e}") from e
 
 
 class DoorCoordinator(DataUpdateCoordinator):
@@ -35,12 +37,8 @@ class DoorCoordinator(DataUpdateCoordinator):
 
         self.entry = config_entry
         self.url = config_entry.data["url"]
+        self.session = async_get_clientsession(hass)
         
         
     async def _async_update(self):
-        # Fetch and return data from your API
-        try:
-            return await fetch_status(self.url)
-        except requests.RequestException as ex:
-            _LOGGER.error("Error updating door control state: %s", ex)
-            raise
+        return await fetch_status(self.session, self.url)
