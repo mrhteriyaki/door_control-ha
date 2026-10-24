@@ -7,6 +7,7 @@ from homeassistant import config_entries
 from .coordinator import DoorCoordinator
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.device_registry import DeviceInfo
 
 DOMAIN = "mrh_door_control"
 _LOGGER = logging.getLogger(__name__)
@@ -55,10 +56,10 @@ class MrhDoorControlSensor(CoordinatorEntity,BinarySensorEntity):
                 
     @property
     def device_info(self):
-        return {
-        "identifiers": {(DOMAIN, self._url)},
-        "name": self._name + " - Sensor",
-        }          
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._url)},
+            name=self._name,
+        )
         
 
         

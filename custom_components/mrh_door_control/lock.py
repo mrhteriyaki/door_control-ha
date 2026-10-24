@@ -8,6 +8,7 @@ from .coordinator import DoorCoordinator
 from datetime import timedelta
 from homeassistant import config_entries
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from homeassistant.components.lock.const import LockState
 from homeassistant.components.lock import (
@@ -64,10 +65,10 @@ class MrhDoorControlLock(CoordinatorEntity,LockEntity):
        
     @property
     def device_info(self):
-        return {
-        "identifiers": {(DOMAIN, self._url)},
-        "name": self._name + " - Lock",
-        }  
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._url)},
+            name=self._name,
+        )
                
     @property
     def unique_id(self):
