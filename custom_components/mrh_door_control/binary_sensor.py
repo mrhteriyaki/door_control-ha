@@ -4,7 +4,7 @@ import voluptuous as vol
 
 from datetime import timedelta
 from homeassistant import config_entries
-from .coordinator import DoorCoordinator
+from .coordinator import DoorCoordinator, entity_uid_prefix
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -26,7 +26,7 @@ class MrhDoorControlSensor(CoordinatorEntity,BinarySensorEntity):
         super().__init__(coordinator)
         self._name = name
         self._url = url
-        self._uid = url.replace("http://", "").replace("https://","").replace(".", "_") + "_" + str(door_pin)
+        self._uid = entity_uid_prefix(url) + "_" + str(door_pin)
         self._door_pin = door_pin
         #self._door_state = None
 

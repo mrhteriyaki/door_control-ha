@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add door controller",
+        "data": {
+          "url": "Device URL",
+          "name": "Name",
+          "door_input_pin": "Door sensor input pin",
+          "lock_output_pin": "Lock output pin",
+          "stateless_lock": "Stateless lock (pulse to open)"
+        }
+      },
+      "reconfigure": {
+        "title": "Change device URL",
+        "description": "Update the address if the controller's IP has changed. Entities and history are kept.",
+        "data": {
+          "url": "Device URL"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the device at that URL."
+    },
+    "abort": {
+      "reconfigure_successful": "The device URL was updated."
+    }
+  }
+}

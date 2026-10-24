@@ -4,7 +4,7 @@ import voluptuous as vol
 import aiohttp
 import asyncio
 
-from .coordinator import DoorCoordinator
+from .coordinator import DoorCoordinator, entity_uid_prefix
 from datetime import timedelta
 from homeassistant import config_entries
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -42,7 +42,7 @@ class MrhDoorControlLock(CoordinatorEntity,LockEntity):
         super().__init__(coordinator)
         self._name = name
         self._url = url
-        self._uid = url.replace("http://", "").replace("https://","").replace(".", "_") + "_" + str(lock_pin)
+        self._uid = entity_uid_prefix(url) + "_" + str(lock_pin)
         self._lock_state = None
         self._lock_pin = lock_pin
         self._stateless_lock = stateless_lock
@@ -82,11 +82,8 @@ class MrhDoorControlLock(CoordinatorEntity,LockEntity):
             return 0 #Normal lock/unlock feature.
 
     async def send_control_command(self, payload):
-        headers = {'Content-Type': 'text/plain'}
-        async with aiohttp.ClientSession() as session:
-            async with session.post(self._url, data=payload, headers=headers) as response:
-                if response.status != 200:
-                    _LOGGER.error(f"Failed to send command {payload}. Server: {self._url} Response Status: {response.status}")
+        # Goes through the coordinator so it queues behind any in-flight poll to the same device
+        await self.coordinator.async_send_command(payload)
 
 
     async def async_unlock(self, **kwargs):
